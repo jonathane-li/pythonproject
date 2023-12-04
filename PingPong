@@ -2,7 +2,7 @@ import pygame
 pygame.init()
 
 
-WIDTH, HEIGHT = 700, 500
+WIDTH, HEIGHT = 800, 800
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Ping Pong")
 
@@ -15,7 +15,7 @@ PADDLE_WIDTH, PADDLE_HEIGHT = 20, 100
 BALL_RADIUS = 7
 
 SCORE_FONT = pygame.font.SysFont("comicsans", 50)
-WINNING_SCORE = 10
+WINNING_SCORE = 5
 
 
 class Paddle:
@@ -68,11 +68,16 @@ class Ball:
         self.x_vel *= -1
 
 
-def draw(win, paddles, ball, left_score, right_score):
+def draw(win, paddles, ball, left_score, right_score, player1_name, player2_name):
     win.fill(BLACK)
 
+    name_font = pygame.font.SysFont("timesnewroman", 10)
     left_score_text = SCORE_FONT.render(f"{left_score}", 1, WHITE)
     right_score_text = SCORE_FONT.render(f"{right_score}", 1, WHITE)
+    player1_text = name_font.render(f"{player1_name}", 1, WHITE)
+    player2_text = name_font.render(f"{player2_name}", 1, WHITE)
+    win.blit(player1_text, (10, 10))  # Adjust position as needed
+    win.blit(player2_text, (WIDTH - player2_text.get_width() - 10, 10))  # Adjust position as needed
     win.blit(left_score_text, (WIDTH//4 - left_score_text.get_width()//2, 20))
     win.blit(right_score_text, (WIDTH * (3/4) -
                                 right_score_text.get_width()//2, 20))
@@ -87,6 +92,12 @@ def draw(win, paddles, ball, left_score, right_score):
 
     ball.draw(win)
     pygame.display.update()
+    
+def get_player_names():
+    player1 = input("Enter Player 1's name: ")
+    player2 = input("Enter Player 2's name: ")
+    return player1, player2
+
 
 
 def handle_collision(ball, left_paddle, right_paddle):
@@ -131,6 +142,7 @@ def handle_paddle_movement(keys, left_paddle, right_paddle):
 
 
 def main():
+    player1_name, player2_name = get_player_names()
     run = True
     clock = pygame.time.Clock()
 
@@ -145,7 +157,7 @@ def main():
 
     while run:
         clock.tick(FPS)
-        draw(WIN, [left_paddle, right_paddle], ball, left_score, right_score)
+        draw(WIN, [left_paddle, right_paddle], ball, left_score, right_score, player1_name, player2_name)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -173,17 +185,21 @@ def main():
             won = True
             win_text = "Right Player Won!"
 
-        if won:
-            text = SCORE_FONT.render(win_text, 1, WHITE)
-            WIN.blit(text, (WIDTH//2 - text.get_width() //
-                            2, HEIGHT//2 - text.get_height()//2))
-            pygame.display.update()
-            pygame.time.delay(5000)
-            ball.reset()
-            left_paddle.reset()
-            right_paddle.reset()
-            left_score = 0
-            right_score = 0
+        if won: 
+             if left_score > right_score:
+                 winner_name = player1_name
+             else:
+                 player2_name
+             win_text = f"{winner_name} Won!"
+             text = SCORE_FONT.render(win_text, 1, WHITE)
+             WIN.blit(text, (WIDTH//2 - text.get_width() // 2, HEIGHT//2 - text.get_height()//2))
+             pygame.display.update()
+             pygame.time.delay(10000)
+             ball.reset()
+             left_paddle.reset()
+             right_paddle.reset()
+             left_score = 0
+             right_score = 0
 
     pygame.quit()
 
