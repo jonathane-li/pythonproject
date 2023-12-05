@@ -1,0 +1,175 @@
+import pygame
+import sys
+import time
+import random
+
+pygame.init()
+
+# Constants
+WIDTH, HEIGHT = 800, 800
+
+# Create the game window
+WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Menu")
+
+# Menu variables
+menu_font = pygame.font.SysFont("comicsans", 50)
+menu_items = ["Snake", "Connect Four", "Pong", "Quit"]
+selected_item = 0  # Index of the selected menu item
+class SnakeGame:
+    def __init__(self):
+        pygame.init()
+        self.window_size = (500, 500)
+        self.surface = pygame.display.set_mode(self.window_size)
+        pygame.display.set_caption('Snake Game')
+        self.clock = pygame.time.Clock()
+
+        # Create zig-zag background
+        self.create_zigzag_background()
+
+        # Load snake block image
+        self.snake_block = pygame.image.load('block.jpg')
+        self.snake_block = pygame.transform.scale(self.snake_block, (10, 10))
+
+        # Load images
+        self.apple_block = pygame.Surface((10, 10))
+        self.apple_block.fill((255, 0, 0))  # Apple color (red)
+
+        # Snake attributes
+        self.snake_pos = [100, 50]
+        self.snake_body = [[100, 50], [90, 50], [80, 50], [70, 50], [60, 50]]
+        self.direction = 'RIGHT'
+        self.change_to = self.direction
+        self.speed = 15
+
+        # Apple attributes
+        self.apple_pos = [random.randrange(1, (self.window_size[0] // 10)) * 10,
+                          random.randrange(1, (self.window_size[1] // 10)) * 10]
+
+        # Score
+        self.score = 0
+        self.font = pygame.font.Font(None, 36)
+
+    def create_zigzag_background(self):
+    # Create a surface for the background
+        self.background = pygame.Surface(self.window_size)
+        self.background.fill((0, 100, 0))  # Dark green
+
+    # Draw light green zig-zag lines
+    def draw_elements(self):
+        self.surface.blit(self.background, (0, 0))
+
+        # Draw snake and apple
+        for pos in self.snake_body:
+            self.surface.blit(self.snake_block, pos)
+        self.surface.blit(self.apple_block, self.apple_pos)
+
+        # Display score
+        score_text = self.font.render(f'Score: {self.score}', True, (255, 255, 255))
+        self.surface.blit(score_text, (10, 10))
+
+        pygame.display.flip()
+
+    def run_game(self):
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  # Handle the window close event
+                    pygame.quit()
+                    quit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        self.change_to = 'UP'
+                    elif event.key == pygame.K_DOWN:
+                        self.change_to = 'DOWN'
+                    elif event.key == pygame.K_LEFT:
+                        self.change_to = 'LEFT'
+                    elif event.key == pygame.K_RIGHT:
+                        self.change_to = 'RIGHT'
+
+            # Change the direction according to the pressed key
+            if self.change_to == 'UP' and not self.direction == 'DOWN':
+                self.direction = 'UP'
+            if self.change_to == 'DOWN' and not self.direction == 'UP':
+                self.direction = 'DOWN'
+            if self.change_to == 'LEFT' and not self.direction == 'RIGHT':
+                self.direction = 'LEFT'
+            if self.change_to == 'RIGHT' and not self.direction == 'LEFT':
+                self.direction = 'RIGHT'
+
+            # Move the snake
+            if self.direction == 'UP':
+                self.snake_pos[1] -= 10
+            if self.direction == 'DOWN':
+                self.snake_pos[1] += 10
+            if self.direction == 'LEFT':
+                self.snake_pos[0] -= 10
+            if self.direction == 'RIGHT':
+                self.snake_pos[0] += 10
+
+            if (
+                self.snake_pos[0] < 0 or
+                self.snake_pos[0] > self.window_size[0] - 10 or
+                self.snake_pos[1] < 0 or
+                self.snake_pos[1] > self.window_size[1] - 10 or
+                self.snake_pos in self.snake_body[1:]
+            ):
+                pygame.quit()
+                quit()
+
+            # Check if the snake has eaten the apple
+            if self.snake_pos == self.apple_pos:
+                self.apple_pos = [random.randrange(1, (self.window_size[0] // 10)) * 10,
+                                  random.randrange(1, (self.window_size[1] // 10)) * 10]
+                self.score += 1
+                self.snake_body.append(list(self.snake_pos))  # Use list() to create a copy
+
+            else:
+                # Remove the last segment of the snake
+                self.snake_body.pop()
+
+            # Add a new segment to the snake
+            self.snake_body.insert(0, list(self.snake_pos))
+
+            # Draw the game elements
+            self.draw_elements()
+
+            # Control the speed of the game
+            self.clock.tick(self.speed)
+
+def run_snake_game():
+    game = SnakeGame()
+    game.run_game()
+
+# Main menu loop
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_DOWN:
+                selected_item = (selected_item + 1) % len(menu_items)
+            elif event.key == pygame.K_UP:
+                selected_item = (selected_item - 1) % len(menu_items)
+            elif event.key == pygame.K_RETURN:
+                if menu_items[selected_item] == "Snake":
+                    run_snake_game()
+                elif menu_items[selected_item] == "Connect Four":
+                    pygame.quit()
+                    # Add the Connect Four game class here
+                elif menu_items[selected_item] == "Pong":
+                    pygame.quit()
+                    # Add the Pong game class here
+                elif menu_items[selected_item] == "Quit":
+                    pygame.quit()
+                    sys.exit()
+
+    # Display the menu
+    WIN.fill((0, 0, 0))  # Black background
+    for i, item in enumerate(menu_items):
+        color = (255, 255, 255) if i == selected_item else (128, 128, 128)
+        text = menu_font.render(item, True, color)
+        x = (WIN.get_width() - text.get_width()) // 2
+        y = (i + 1) * 100
+        WIN.blit(text, (x, y))
+    pygame.display.update()
