@@ -2,6 +2,8 @@ import pygame
 import sys
 import time
 import random
+import numpy as np
+import math
 
 pygame.init()
 
@@ -80,7 +82,7 @@ class SnakeGame:
                     elif event.key == pygame.K_RIGHT:
                         self.change_to = 'RIGHT'
 
-            # Change the direction according to the pressed key
+            
             if self.change_to == 'UP' and not self.direction == 'DOWN':
                 self.direction = 'UP'
             if self.change_to == 'DOWN' and not self.direction == 'UP':
@@ -90,7 +92,7 @@ class SnakeGame:
             if self.change_to == 'RIGHT' and not self.direction == 'LEFT':
                 self.direction = 'RIGHT'
 
-            # Move the snake
+     
             if self.direction == 'UP':
                 self.snake_pos[1] -= 10
             if self.direction == 'DOWN':
@@ -134,6 +136,173 @@ def run_snake_game():
     game.run_game()
 
 pygame.init()
+
+class ConnectFourGame:
+    def __init__(self):
+        self.BLUE = (0, 0, 230)
+        self.BLACK = (0, 0, 0)
+        self.RED = (255, 0, 0)
+        self.YELLOW = (255, 255, 0)
+
+        self.ROW_COUNT = 6
+        self.COLUMN_COUNT = 7
+
+        self.board = self.create_board()
+        self.game_over = False
+        self.turn = 0
+
+
+        pygame.init()
+
+        self.SQUARESIZE = 100
+
+        self.width = self.COLUMN_COUNT * self.SQUARESIZE
+        self.height = (self.ROW_COUNT + 1) * self.SQUARESIZE
+
+        self.size = (self.width, self.height)
+
+        self.RADIUS = int(self.SQUARESIZE / 2 - 5)
+
+        self.screen = pygame.display.set_mode(self.size)
+
+        self.myfont = pygame.font.SysFont("monospace", 75)
+
+    def create_board(self):
+        return np.zeros((self.ROW_COUNT, self.COLUMN_COUNT))
+
+    def drop_piece(self, row, col, piece):
+        self.board[row][col] = piece
+
+    def is_valid_location(self, col):
+        return self.board[self.ROW_COUNT - 1][col] == 0
+
+    def get_next_open_row(self, col):
+        for r in range(self.ROW_COUNT):
+            if self.board[r][col] == 0:
+                return r
+
+    def print_board(self):
+        print(np.flip(self.board, 0))
+
+    def winning_move(self, piece):
+
+        for c in range(self.COLUMN_COUNT - 3):
+            for r in range(self.ROW_COUNT):
+                if (
+                    self.board[r][c] == piece
+                    and self.board[r][c + 1] == piece
+                    and self.board[r][c + 2] == piece
+                    and self.board[r][c + 3] == piece
+                ):
+                    return True
+
+      
+        for c in range(self.COLUMN_COUNT):
+            for r in range(self.ROW_COUNT - 3):
+                if (
+                    self.board[r][c] == piece
+                    and self.board[r + 1][c] == piece
+                    and self.board[r + 2][c] == piece
+                    and self.board[r + 3][c] == piece
+                ):
+                    return True
+
+        for c in range(self.COLUMN_COUNT - 3):
+            for r in range(self.ROW_COUNT - 3):
+                if (
+                    self.board[r][c] == piece
+                    and self.board[r + 1][c + 1] == piece
+                    and self.board[r + 2][c + 2] == piece
+                    and self.board[r + 3][c + 3] == piece
+                ):
+                    return True
+
+
+        for c in range(self.COLUMN_COUNT - 3):
+            for r in range(3, self.ROW_COUNT):
+                if (
+                    self.board[r][c] == piece
+                    and self.board[r - 1][c + 1] == piece
+                    and self.board[r - 2][c + 2] == piece
+                    and self.board[r - 3][c + 3] == piece
+                ):
+                    return True
+
+        return False
+
+    def draw_board(self):
+        for c in range(self.COLUMN_COUNT):
+            for r in range(self.ROW_COUNT):
+                pygame.draw.rect(
+                    self.screen,
+                    self.BLUE,
+                    (c * self.SQUARESIZE, r * self.SQUARESIZE + self.SQUARESIZE, self.SQUARESIZE, self.SQUARESIZE),
+                )
+                pygame.draw.circle(
+                    self.screen,
+                    self.BLACK,
+                    (int(c * self.SQUARESIZE + self.SQUARESIZE / 2), int(r * self.SQUARESIZE + self.SQUARESIZE + self.SQUARESIZE / 2)),
+                    self.RADIUS,
+                )
+
+        for c in range(self.COLUMN_COUNT):
+            for r in range(self.ROW_COUNT):
+                if self.board[r][c] == 1:
+                    pygame.draw.circle(
+                        self.screen,
+                        self.RED,
+                        (int(c * self.SQUARESIZE + self.SQUARESIZE / 2), self.height - int(r * self.SQUARESIZE + self.SQUARESIZE / 2)),
+                        self.RADIUS,
+                    )
+                elif self.board[r][c] == 2:
+                    pygame.draw.circle(
+                        self.screen,
+                        self.YELLOW,
+                        (int(c * self.SQUARESIZE + self.SQUARESIZE / 2), self.height - int(r * self.SQUARESIZE + self.SQUARESIZE / 2)),
+                        self.RADIUS,
+                    )
+        pygame.display.update()
+
+    def run_game(self):
+        while not self.game_over:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
+
+                if event.type == pygame.MOUSEMOTION:
+                    pygame.draw.rect(self.screen, self.BLACK, (0, 0, self.width, self.SQUARESIZE))
+                    posx = event.pos[0]
+                    if self.turn == 0:
+                        pygame.draw.circle(self.screen, self.RED, (posx, int(self.SQUARESIZE / 2)), self.RADIUS)
+                    else:
+                        pygame.draw.circle(self.screen, self.YELLOW, (posx, int(self.SQUARESIZE / 2)), self.RADIUS)
+                    pygame.display.update()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    pygame.draw.rect(self.screen, self.BLACK, (0, 0, self.width, self.SQUARESIZE))
+                    posx = event.pos[0]
+                    col = int(math.floor(posx / self.SQUARESIZE))
+
+                    if self.is_valid_location(col):
+                        row = self.get_next_open_row(col)
+                        self.drop_piece(row, col, 1 if self.turn == 0 else 2)
+
+                        if self.winning_move(1 if self.turn == 0 else 2):
+                            winner = "Player 1" if self.turn == 0 else "Player 2"
+                            label = self.myfont.render(f"{winner} wins!!", 1, self.RED if self.turn == 0 else self.YELLOW)
+                            self.screen.blit(label, (40, 10))
+                            self.game_over = True
+
+                    self.print_board()
+                    self.draw_board()
+
+                    self.turn += 1
+                    self.turn = self.turn % 2
+
+                    if self.game_over:
+                        pygame.time.wait(3000)
+
+        pygame.quit()
 
 class PingPongGame:
     def __init__(self):
@@ -338,7 +507,8 @@ while True:
                 if menu_items[selected_item] == "Snake":
                     run_snake_game()
                 elif menu_items[selected_item] == "Connect Four":
-                    pygame.quit()
+                    game_connect = ConnectFourGame()
+                    game_connect.run_game()
                 elif menu_items[selected_item] == "Pong":
                         game = PingPongGame()
                         game.run_game()
