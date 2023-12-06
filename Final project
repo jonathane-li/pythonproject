@@ -33,7 +33,7 @@ class SnakeGame:
         self.snake_block = pygame.transform.scale(self.snake_block, (10, 10))
 
         self.apple_block = pygame.Surface((10, 10))
-        self.apple_block.fill((255, 0, 0))  # Apple color (red)
+        self.apple_block.fill((255, 0, 0)) 
 
         self.snake_pos = [100, 50]
         self.snake_body = [[100, 50], [90, 50], [80, 50], [70, 50], [60, 50]]
