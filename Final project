@@ -5,17 +5,17 @@ import random
 
 pygame.init()
 
-# Constants
+
 WIDTH, HEIGHT = 800, 800
 
-# Create the game window
+
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Menu")
 
-# Menu variables
+
 menu_font = pygame.font.SysFont("comicsans", 50)
 menu_items = ["Snake", "Connect Four", "Pong", "Quit"]
-selected_item = 0  # Index of the selected menu item
+selected_item = 0 
 class SnakeGame:
     def __init__(self):
         pygame.init()
@@ -24,47 +24,41 @@ class SnakeGame:
         pygame.display.set_caption('Snake Game')
         self.clock = pygame.time.Clock()
 
-        # Create zig-zag background
+
         self.create_zigzag_background()
 
-        # Load snake block image
         self.snake_block = pygame.image.load('block.jpg')
         self.snake_block = pygame.transform.scale(self.snake_block, (10, 10))
 
-        # Load images
         self.apple_block = pygame.Surface((10, 10))
         self.apple_block.fill((255, 0, 0))  # Apple color (red)
 
-        # Snake attributes
         self.snake_pos = [100, 50]
         self.snake_body = [[100, 50], [90, 50], [80, 50], [70, 50], [60, 50]]
         self.direction = 'RIGHT'
         self.change_to = self.direction
         self.speed = 15
 
-        # Apple attributes
+
         self.apple_pos = [random.randrange(1, (self.window_size[0] // 10)) * 10,
                           random.randrange(1, (self.window_size[1] // 10)) * 10]
 
-        # Score
         self.score = 0
         self.font = pygame.font.Font(None, 36)
 
     def create_zigzag_background(self):
-    # Create a surface for the background
         self.background = pygame.Surface(self.window_size)
-        self.background.fill((0, 100, 0))  # Dark green
+        self.background.fill((0, 100, 0)) 
 
-    # Draw light green zig-zag lines
+
     def draw_elements(self):
         self.surface.blit(self.background, (0, 0))
 
-        # Draw snake and apple
+
         for pos in self.snake_body:
             self.surface.blit(self.snake_block, pos)
         self.surface.blit(self.apple_block, self.apple_pos)
 
-        # Display score
         score_text = self.font.render(f'Score: {self.score}', True, (255, 255, 255))
         self.surface.blit(score_text, (10, 10))
 
@@ -73,9 +67,9 @@ class SnakeGame:
     def run_game(self):
         while True:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:  # Handle the window close event
-                    pygame.quit()
-                    quit()
+                if event.type == pygame.QUIT:
+                    run = False
+                    break
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
                         self.change_to = 'UP'
@@ -116,31 +110,220 @@ class SnakeGame:
                 pygame.quit()
                 quit()
 
-            # Check if the snake has eaten the apple
+   
             if self.snake_pos == self.apple_pos:
                 self.apple_pos = [random.randrange(1, (self.window_size[0] // 10)) * 10,
                                   random.randrange(1, (self.window_size[1] // 10)) * 10]
                 self.score += 1
-                self.snake_body.append(list(self.snake_pos))  # Use list() to create a copy
+                self.snake_body.append(list(self.snake_pos)) 
 
             else:
-                # Remove the last segment of the snake
+     
                 self.snake_body.pop()
 
-            # Add a new segment to the snake
             self.snake_body.insert(0, list(self.snake_pos))
 
-            # Draw the game elements
+      
             self.draw_elements()
 
-            # Control the speed of the game
+        
             self.clock.tick(self.speed)
 
 def run_snake_game():
     game = SnakeGame()
     game.run_game()
 
-# Main menu loop
+pygame.init()
+
+class PingPongGame:
+    def __init__(self):
+        self.WIDTH, self.HEIGHT = 800, 800
+        self.WIN = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
+        pygame.display.set_caption("Ping Pong")
+
+        self.FPS = 60
+
+        self.WHITE = (255, 255, 255)
+        self.BLACK = (0, 0, 0)
+
+        self.PADDLE_WIDTH, self.PADDLE_HEIGHT = 20, 100
+        self.BALL_RADIUS = 7
+
+        self.SCORE_FONT = pygame.font.SysFont("comicsans", 50)
+        self.WINNING_SCORE = 5
+
+        self.left_paddle = self.Paddle(10, self.HEIGHT // 2 - self.PADDLE_HEIGHT // 2, self.PADDLE_WIDTH, self.PADDLE_HEIGHT)
+        self.right_paddle = self.Paddle(self.WIDTH - 10 - self.PADDLE_WIDTH, self.HEIGHT // 2 - self.PADDLE_HEIGHT // 2, self.PADDLE_WIDTH, self.PADDLE_HEIGHT)
+        self.ball = self.Ball(self.WIDTH // 2, self.HEIGHT // 2, self.BALL_RADIUS)
+
+        self.left_score = 0
+        self.right_score = 0
+
+    class Paddle:
+        COLOR = (255, 255, 255)
+        VEL = 4
+
+        def __init__(self, x, y, width, height):
+            self.x = self.original_x = x
+            self.y = self.original_y = y
+            self.width = width
+            self.height = height
+
+        def draw(self, win):
+            pygame.draw.rect(win, self.COLOR, (self.x, self.y, self.width, self.height))
+
+        def move(self, up=True):
+            if up:
+                self.y -= self.VEL
+            else:
+                self.y += self.VEL
+
+        def reset(self):
+            self.x = self.original_x
+            self.y = self.original_y
+
+    class Ball:
+        MAX_VEL = 5
+        COLOR = (255, 255, 255)
+
+        def __init__(self, x, y, radius):
+            self.x = self.original_x = x
+            self.y = self.original_y = y
+            self.radius = radius
+            self.x_vel = self.MAX_VEL
+            self.y_vel = 0
+
+        def draw(self, win):
+            pygame.draw.circle(win, self.COLOR, (self.x, self.y), self.radius)
+
+        def move(self):
+            self.x += self.x_vel
+            self.y += self.y_vel
+
+        def reset(self):
+            self.x = self.original_x
+            self.y = self.original_y
+            self.y_vel = 0
+            self.x_vel *= -1
+
+    def draw(self, paddles, ball, left_score, right_score, player1_name, player2_name):
+        self.WIN.fill(self.BLACK)
+
+        name_font = pygame.font.SysFont("timesnewroman", 10)
+        left_score_text = self.SCORE_FONT.render(f"{left_score}", 1, self.WHITE)
+        right_score_text = self.SCORE_FONT.render(f"{right_score}", 1, self.WHITE)
+        player1_text = name_font.render(f"{player1_name}", 1, self.WHITE)
+        player2_text = name_font.render(f"{player2_name}", 1, self.WHITE)
+        self.WIN.blit(player1_text, (10, 10))  
+        self.WIN.blit(player2_text, (self.WIDTH - player2_text.get_width() - 10, 10)) 
+        self.WIN.blit(left_score_text, (self.WIDTH//4 - left_score_text.get_width()//2, 20))
+        self.WIN.blit(right_score_text, (self.WIDTH * (3/4) -
+                                    right_score_text.get_width()//2, 20))
+
+        for paddle in paddles:
+            paddle.draw(self.WIN)
+
+        for i in range(10, self.HEIGHT, self.HEIGHT//20):
+            if i % 2 == 1:
+                continue
+            pygame.draw.rect(self.WIN, self.WHITE, (self.WIDTH//2 - 5, i, 10, self.HEIGHT//20))
+
+        ball.draw(self.WIN)
+        pygame.display.update()
+    
+    def get_player_names(self):
+        player1 = input("Enter Player 1's name: ")
+        player2 = input("Enter Player 2's name: ")
+        return player1, player2
+
+    def handle_collision(self, ball, left_paddle, right_paddle):
+        if ball.y + ball.radius >= self.HEIGHT:
+            ball.y_vel *= -1
+        elif ball.y - ball.radius <= 0:
+            ball.y_vel *= -1
+
+        if ball.x_vel < 0:
+            if ball.y >= left_paddle.y and ball.y <= left_paddle.y + left_paddle.height:
+                if ball.x - ball.radius <= left_paddle.x + left_paddle.width:
+                    ball.x_vel *= -1
+
+                    middle_y = left_paddle.y + left_paddle.height / 2
+                    difference_in_y = middle_y - ball.y
+                    reduction_factor = (left_paddle.height / 2) / ball.MAX_VEL
+                    y_vel = difference_in_y / reduction_factor
+                    ball.y_vel = -1 * y_vel
+
+        else:
+            if ball.y >= right_paddle.y and ball.y <= right_paddle.y + right_paddle.height:
+                if ball.x + ball.radius >= right_paddle.x:
+                    ball.x_vel *= -1
+
+                    middle_y = right_paddle.y + right_paddle.height / 2
+                    difference_in_y = middle_y - ball.y
+                    reduction_factor = (right_paddle.height / 2) / ball.MAX_VEL
+                    y_vel = difference_in_y / reduction_factor
+                    ball.y_vel = -1 * y_vel
+
+    def handle_paddle_movement(self, keys, left_paddle, right_paddle):
+        if keys[pygame.K_w] and left_paddle.y - left_paddle.VEL >= 0:
+            left_paddle.move(up=True)
+        if keys[pygame.K_s] and left_paddle.y + left_paddle.VEL + left_paddle.height <= self.HEIGHT:
+            left_paddle.move(up=False)
+
+        if keys[pygame.K_UP] and right_paddle.y - right_paddle.VEL >= 0:
+            right_paddle.move(up=True)
+        if keys[pygame.K_DOWN] and right_paddle.y + right_paddle.VEL + right_paddle.height <= self.HEIGHT:
+            right_paddle.move(up=False)
+
+    def run_game(self):
+        player1_name, player2_name = self.get_player_names()
+        run = True
+        clock = pygame.time.Clock()
+
+        while run:
+            clock.tick(self.FPS)
+            self.draw([self.left_paddle, self.right_paddle], self.ball, self.left_score, self.right_score, player1_name, player2_name)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    run = False
+                    break
+
+            keys = pygame.key.get_pressed()
+            self.handle_paddle_movement(keys, self.left_paddle, self.right_paddle)
+
+            self.ball.move()
+            self.handle_collision(self.ball, self.left_paddle, self.right_paddle)
+
+            if self.ball.x < 0:
+                self.right_score += 1
+                self.ball.reset()
+            elif self.ball.x > self.WIDTH:
+                self.left_score += 1
+                self.ball.reset()
+
+            won = False
+            if self.left_score >= self.WINNING_SCORE:
+                won = True
+                win_text = f"{player1_name} Won!"
+            elif self.right_score >= self.WINNING_SCORE:
+                won = True
+                win_text = f"{player2_name} Won!"
+
+            if won:
+                text = self.SCORE_FONT.render(win_text, 1, self.WHITE)
+                self.WIN.blit(text, (self.WIDTH // 2 - text.get_width() // 2, self.HEIGHT // 2 - text.get_height() // 2))
+                pygame.display.update()
+                pygame.time.delay(10000)
+                self.ball.reset()
+                self.left_paddle.reset()
+                self.right_paddle.reset()
+                self.left_score = 0
+                self.right_score = 0
+
+        pygame.quit()
+
+
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -156,16 +339,14 @@ while True:
                     run_snake_game()
                 elif menu_items[selected_item] == "Connect Four":
                     pygame.quit()
-                    # Add the Connect Four game class here
                 elif menu_items[selected_item] == "Pong":
-                    pygame.quit()
-                    # Add the Pong game class here
+                        game = PingPongGame()
+                        game.run_game()
                 elif menu_items[selected_item] == "Quit":
                     pygame.quit()
                     sys.exit()
 
-    # Display the menu
-    WIN.fill((0, 0, 0))  # Black background
+    WIN.fill((0, 0, 0))
     for i, item in enumerate(menu_items):
         color = (255, 255, 255) if i == selected_item else (128, 128, 128)
         text = menu_font.render(item, True, color)
